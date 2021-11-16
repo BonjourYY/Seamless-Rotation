@@ -1,0 +1,27 @@
+* {
+  box-sizing: border-box;
+}
+
+.window {
+  width: 400px;
+  height: 300px;
+  overflow: hidden;
+  margin: 0 auto;
+  border: 1px solid red;
+}
+
+#slides {
+  width: 100%;
+  position: relative;
+  display: flex;
+  transition: all 0.5s;
+}
+
+#slides > img {
+  width: 400px;
+  height: 300px;
+}
+
+#buttons {
+  text-align: center;
+}
