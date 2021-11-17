@@ -4,6 +4,7 @@ import './style.css';
 let $buttons = $('#buttons>button');
 let $slides = $('#slides');
 let $images = $slides.children();
+let current = 0;
 
 // 制作假的dom
 makeFakeDom();
@@ -11,61 +12,34 @@ makeFakeDom();
 $slides.css({ transform: 'translateX(-400px)' });
 // 绑定事件
 bindEvent();
+// 上一张，下一张
+$('.controls>.prev').on('click', () => {
+  goToSlide(current - 1);
+});
+$('.controls>.next').on('click', () => {
+  goToSlide(current + 1);
+});
+// 自动播放
+var timer = setInterval(() => {
+  goToSlide(current + 1);
+}, 2000);
+// 鼠标悬停停止
+$('.container')
+  .on('mouseenter', () => {
+    clearInterval(timer);
+  })
+  .on('mouseleave', () => {
+    timer = setInterval(() => {
+      goToSlide(current + 1);
+    }, 2000);
+  });
 
 function bindEvent() {
-  let current = 0;
-  $buttons.eq(0).on('click', () => {
-    if (current == 2) {
-      console.log('你是从最后一张跳到第一张😉');
-      $slides
-        .css({
-          transform: 'translateX(-1600px)',
-        })
-        .one('transitionend', (e) => {
-          $(e.currentTarget).hide().offset();
-          $(e.currentTarget)
-            .css({
-              transform: 'translateX(-400px)',
-            })
-            .show();
-        });
-    } else {
-      $slides.css({
-        transform: 'translateX(-400px)',
-      });
-    }
-
-    current = 0;
-  });
-
-  $buttons.eq(1).on('click', () => {
-    $slides.css({
-      transform: 'translateX(-800px)',
-    });
-    current = 1;
-  });
-
-  $buttons.eq(2).on('click', () => {
-    if (current == 0) {
-      console.log('你是从第一张跳到最后一张😁');
-      $slides
-        .css({
-          transform: 'translateX(0px)',
-        })
-        .one('transitionend', (e) => {
-          $(e.currentTarget).hide().offset();
-          $(e.currentTarget)
-            .css({
-              transform: 'translateX(-1200px)',
-            })
-            .show();
-        });
-    } else {
-      $slides.css({
-        transform: 'translateX(-1200px)',
-      });
-    }
-    current = 2;
+  $('#buttons').on('click', 'button', (e) => {
+    let currentButton = e.currentTarget;
+    let index = $(currentButton).index();
+    // 点击按钮去指定的幻灯片
+    goToSlide(index);
   });
 }
 
@@ -74,4 +48,46 @@ function makeFakeDom() {
   let $lastCopy = $images.eq($images.length - 1).clone(true);
   $slides.append($firstCopy);
   $slides.prepend($lastCopy);
+}
+
+function goToSlide(index) {
+  if (index > $buttons.length - 1) {
+    index = 0;
+  } else if (index < 0) {
+    index = $buttons.length - 1;
+  }
+  if (current === $buttons.length - 1 && index === 0) {
+    // 最后一张到第一张
+    $slides
+      .css({
+        transform: `translateX(${-($buttons.length + 1) * 400}px)`,
+      })
+      .one('transitionend', (e) => {
+        $(e.currentTarget).hide().offset();
+        $(e.currentTarget)
+          .css({
+            transform: `translateX(${-(index + 1) * 400}px)`,
+          })
+          .show();
+      });
+  } else if (current === 0 && index === $buttons.length - 1) {
+    // 第一张到最后一张
+    $slides
+      .css({
+        transform: 'translateX(0px)',
+      })
+      .one('transitionend', (e) => {
+        $(e.currentTarget).hide().offset();
+        $(e.currentTarget)
+          .css({
+            transform: `translateX(${-$buttons.length * 400}px)`,
+          })
+          .show();
+      });
+  } else {
+    $slides.css({
+      transform: `translateX(${-(index + 1) * 400}px)`,
+    });
+  }
+  current = index;
 }
